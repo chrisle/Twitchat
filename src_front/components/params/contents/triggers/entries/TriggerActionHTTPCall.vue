@@ -97,9 +97,12 @@ class TriggerActionHTTPCall extends AbstractTriggerActionEntry {
 
 		watch(()=>this.action.url, ()=> {
 			const url = this.action.url;
-			this.securityError = url.indexOf("https://") == -1
-							  && url.indexOf("http://localhost") == -1
-							  && url.indexOf("http://127.0.0.1") == -1;
+		    // This regular expression whitelists http or https on reserved private 
+    		// IPv4 addresses (Class A: 10.0.0.0/8, Class B: 172.16.0.0/12, 
+    		// Class C: 192.168.0.0/16), localhost, with or without a port number.
+    		// Reference: https://en.wikipedia.org/wiki/Private_network
+    		const whitelistRegex = /^(https?:\/\/)?(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+|192\.168\.\d+\.\d+)(:\d+)?(\/.*)?$/i;
+			this.securityError = !whitelistRegex.test(url);
 		});
 
 		this.onToggleParam();
